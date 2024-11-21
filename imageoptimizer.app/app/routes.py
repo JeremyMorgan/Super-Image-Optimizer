@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify, send_file
 import cv2
 import numpy as np
 import io
+import imghdr
+from werkzeug.utils import secure_filename
+from PIL import Image
 
 bp = Blueprint('main', __name__)
 
@@ -14,6 +17,27 @@ def upload():
 
     if image.filename == '':
         return jsonify({'error': 'No image selected for uploading'}), 400
+
+    # Secure the filename
+    filename = secure_filename(image.filename)
+
+    # Check the file extension
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    if not ('.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+        return jsonify({'error': 'Invalid file extension'}), 400
+
+    # Check the file content
+    image_content = image.read()
+    image.seek(0)  # Reset the file pointer to the beginning
+    if imghdr.what(None, h=image_content) not in allowed_extensions:
+        return jsonify({'error': 'Invalid image file'}), 400
+
+    # Additional validation using Pillow
+    try:
+        img = Image.open(io.BytesIO(image_content))
+        img.verify()  # Verify that it is, in fact, an image
+    except (IOError, SyntaxError) as e:
+        return jsonify({'error': 'Invalid image file'}), 400
 
     # Get the quality parameter from the request, default to 10 if not provided
     quality = request.form.get('quality', default=10, type=int)
@@ -34,6 +58,16 @@ def upload():
 
     # Create a BytesIO object from the buffer
     img_io = io.BytesIO(buffer)
+
+    # Validate the processed image
+    try:
+        processed_img = Image.open(img_io)
+        processed_img.verify()
+    except (IOError, SyntaxError) as e:
+        return jsonify({'error': 'Failed to process image'}), 400
+
+    # Reset the BytesIO object pointer to the beginning
+    img_io.seek(0)
 
     # Return the processed image as binary data
     return send_file(img_io, mimetype='image/jpeg')
