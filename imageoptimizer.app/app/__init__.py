@@ -1,9 +1,17 @@
 from flask import Flask
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
-    app.config['UPLOAD_FOLDER'] = 'uploads/'
-    app.config['DEBUG'] = True  # Add this line to enable debug mode
+    CORS(app, resources={
+        r"/*": {
+            "origins": ["http://localhost:5173"],
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type"]
+        }
+    })
+
+    app.config['DEBUG'] = True
 
     from . import routes
     app.register_blueprint(routes.bp)
