@@ -30,7 +30,7 @@ def upload():
         filename = secure_filename(image.filename)
 
         # Check the file extension
-        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+        allowed_extensions = {'png', 'jpg', 'jpeg'}
         if not ('.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions):
             logger.error('Invalid file extension: %s', filename)
             return jsonify({'error': 'Invalid file extension'}), 400
@@ -50,13 +50,17 @@ def upload():
             logger.error('Invalid image file: %s', e)
             return jsonify({'error': 'Invalid image file'}), 400
 
-        # Get the quality parameter from the request, default to 10 if not provided
-        quality = request.form.get('quality', default=10, type=int)
+        # Check if quality parameter is present
+        if 'quality' not in request.form:
+            logger.error('Quality parameter is missing')
+            return jsonify({'error': 'Quality parameter is required'}), 400
 
+        # Get the quality parameter from the request
+        quality = request.form.get('quality', type=int)
         # Validate the quality parameter
-        if quality < 0 or quality > 100:
-            logger.error('Quality must be between 0 and 100, got: %d', quality)
-            return jsonify({'error': 'Quality must be between 0 and 100'}), 400
+        if quality is None or quality < 0 or quality > 100:
+            logger.error('Invalid quality value: %s', quality)
+            return jsonify({'error': 'Quality must be an integer between 0 and 100'}), 400
 
         # Read the image directly from the request
         img_array = np.frombuffer(image.read(), np.uint8)
