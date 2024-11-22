@@ -3,6 +3,14 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+
+/**
+ * Main application component for image optimization.
+ * Handles image selection, quality adjustment, and optimization process.
+ * Displays both original and optimized images with size comparisons.
+ *
+ * @returns {JSX.Element} The rendered application component
+ */
 function App() {
   const [count, setCount] = useState(0)
   const [selectedImage, setSelectedImage] = useState(null);
@@ -12,6 +20,12 @@ function App() {
   const [optimizedImageUrl, setOptimizedImageUrl] = useState(null);
   const [optimizedImageSize, setOptimizedImageSize] = useState(null);
 
+  /**
+   * Formats file size from bytes to a human-readable string.
+   *
+   * @param {number} bytes - The file size in bytes
+   * @returns {string} Formatted file size with appropriate unit (Bytes, KB, MB, or GB)
+   */
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -31,7 +45,7 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedImage) {
       alert('Please select an image first');
       return;
@@ -46,7 +60,7 @@ function App() {
         method: 'POST',
         body: formData,
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const imageUrl = URL.createObjectURL(blob);
@@ -77,7 +91,7 @@ function App() {
       <header className="header">
         <h1>Image Optimizer</h1>
       </header>
-      
+
       <main className="main-content">
         <form onSubmit={handleSubmit} className="upload-form">
           <div className="upload-section">
@@ -119,7 +133,7 @@ function App() {
               <p>Size: {formatFileSize(selectedImageSize)}</p>
             </div>
           )}
-          
+
           {optimizedImageUrl && (
             <div className="image-container">
               <h2>Optimized Image</h2>
