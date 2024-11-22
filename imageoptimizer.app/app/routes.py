@@ -15,6 +15,19 @@ bp = Blueprint('main', __name__)
 
 @bp.route('/upload', methods=['POST'])
 def upload():
+    """
+    This function handles the image upload request. It validates the image file,
+    checks the file extension and content, gets the quality parameter from the
+    request, processes the image with OpenCV according to the quality parameter,
+    and returns the processed image as binary data.
+
+    Parameters:
+    request: The request object containing the image file and quality parameter.
+
+    Returns:
+    send_file: The processed image as binary data if the request is successful,
+    otherwise returns a JSON response with an error message.
+    """
     try:
         if 'image' not in request.files:
             logger.error('No image part in the request')
